@@ -3,7 +3,7 @@ using System;
 using System.Linq;
 using System.Linq.Expressions;
 
-#if !NET35 && !NET5_0 && !NETCOREAPP2_1 && !NETSTANDARD2_0
+#if !NET35 && !NET40 && !NET5_0 && !NETCOREAPP2_1 && !NETSTANDARD2_0
 using System.Data.Entity;
 #endif
 

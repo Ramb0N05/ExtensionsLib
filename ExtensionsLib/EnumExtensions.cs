@@ -105,7 +105,7 @@ namespace SharpRambo.ExtensionsLib
                     this.Add(enumType, eFEC);
             }
 
-#if !NET20 && !NET35 && !NET40
+#if !NET20
             public async Task AddRangeAsync(params Enum[] enums) => await AddRangeAsync(new EnumCollection(enums));
             public async Task AddRangeAsync(EnumCollection enumCollection)
             {
@@ -114,7 +114,9 @@ namespace SharpRambo.ExtensionsLib
 
                 await enumCollection.ForEachAsync(e => {
                     Add(e);
-#if NET45
+#if NET35 || NET40
+                    return GenericExtensions.GetCompletedTask();
+#elif NET45
                     return Task.FromResult(0);
 #else
                     return Task.CompletedTask;
@@ -130,7 +132,10 @@ namespace SharpRambo.ExtensionsLib
 
                 await enumTypeCollection.ForEachAsync(eT => {
                     Add(eT);
-#if NET45
+
+#if NET35 || NET40
+                    return GenericExtensions.GetCompletedTask();
+#elif NET45
                     return Task.FromResult(0);
 #else
                     return Task.CompletedTask;

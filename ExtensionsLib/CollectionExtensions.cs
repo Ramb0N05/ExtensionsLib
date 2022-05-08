@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-#if !NET20 && !NET35 && !NET40
+#if !NET20
 using System.Threading.Tasks;
 #endif
 
@@ -11,7 +11,7 @@ namespace SharpRambo.ExtensionsLib
     /// <summary>The CollectionExtensions class.</summary>
     public static class CollectionExtensions
     {
-#if !NET20 && !NET35 && !NET40
+#if !NET20
         public static async Task ForEachAsync<T>(this IEnumerable<T> list, Func<T, Task> func)
         {
             foreach (T value in list)
@@ -30,7 +30,7 @@ namespace SharpRambo.ExtensionsLib
 
             foreach (T value in list)
                 result.Add(await func(value).ConfigureAwait(false));
-
+            
             return result;
         }
 #endif
@@ -141,7 +141,7 @@ namespace SharpRambo.ExtensionsLib
         public static void Add<TDictKey, TKVPKey, TKVPValue>(this Dictionary<TDictKey, KeyValuePair<TKVPKey, TKVPValue>> dictKVP, TDictKey key, TKVPKey valueKey, TKVPValue value)
             => dictKVP.Add(key, new KeyValuePair<TKVPKey, TKVPValue>(valueKey, value));
 
-#if !NET20 && !NET35 && !NET40
+#if !NET20
         public static async Task<IList<T>> InitializeAsync<T>(this IEnumerable<T> source, IEnumerable<Task<T>> data)
             => await source.InitializeAsync<T, ObservableCollection<T>>(data);
         public static async Task<TDefault> InitializeAsync<T, TDefault>(this IEnumerable<T> source, IEnumerable<Task<T>> data)

@@ -3,6 +3,10 @@ using System.IO;
 using System.Linq;
 using System.Collections.Generic;
 
+#if NET35 || NET40
+using System.Threading.Tasks;
+#endif
+
 namespace SharpRambo.ExtensionsLib
 {
     /// <summary>The GenericExtensions class.</summary>
@@ -142,5 +146,10 @@ namespace SharpRambo.ExtensionsLib
             fileInfo.Refresh();
             return fileInfo;
         }
+
+#if NET35 || NET40
+        public static Task GetCompletedTask()
+                => new Task(() => { return; }, new System.Threading.CancellationToken(false), TaskCreationOptions.AttachedToParent);
+#endif
     }
 }
