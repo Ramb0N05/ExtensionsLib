@@ -2,16 +2,20 @@
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text;
+using System.Diagnostics.CodeAnalysis;
 
 #if NET35 || NET40
 using System.Threading.Tasks;
 #endif
 
-namespace SharpRambo.ExtensionsLib
-{
+namespace SharpRambo.ExtensionsLib {
+
     /// <summary>The GenericExtensions class.</summary>
-    public static class GenericExtensions
-    {
+    public static class GenericExtensions {
+
+        #region Object Extensions
+
         /// <summary>Parses an object of a given <see cref="Type"/> to a <see cref="string"/>.</summary>
         /// <remarks>
         /// <see cref="string"/>-Types are enclosed in single quotation marks if <paramref name="quoteStringValues"/> is set to <see langword="True"/>.<br/>
@@ -22,28 +26,30 @@ namespace SharpRambo.ExtensionsLib
         /// <param name="ValueType">The <see cref="Type"/> of the value.</param>
         /// <param name="quoteStringValues">Specifies whether <see langword="string"/> values should be enclosed in quotation marks.</param>
         /// <returns>The parsed value as <see cref="string"/>.</returns>
-        public static string ParseToString(this object obj, Type ValueType = null, bool quoteStringValues = true)
+        public static string ParseToString(this object obj, Type ValueType = null, bool quoteStringValues = true) {
+            string quote = quoteStringValues ? "'" : string.Empty;
+
 #if NET5_0_OR_GREATER
-            => obj == null
+
+            return obj == null
                 ? "NULL"
-                : Type.GetTypeCode(ValueType) switch
-                {
-                    TypeCode.Char or TypeCode.String => (quoteStringValues ? "'" : string.Empty) + Convert.ToString(obj) + (quoteStringValues ? "'" : string.Empty),
-                    TypeCode.DateTime => (quoteStringValues ? "'" : string.Empty) + Convert.ToDateTime(obj).ToString() + (quoteStringValues ? "'" : string.Empty),
+                : Type.GetTypeCode(ValueType) switch {
+                    TypeCode.Char or TypeCode.String => quote + Convert.ToString(obj) + quote,
+                    TypeCode.DateTime => quote + Convert.ToDateTime(obj).ToString() + quote,
                     TypeCode.Boolean => Convert.ToInt32(Convert.ToBoolean(obj)).ToString(),
                     TypeCode.Empty or TypeCode.DBNull => "NULL",
                     _ => Convert.ToString(obj),
                 };
+
 #else
-        {
             if (obj != null) {
                 switch (Type.GetTypeCode(ValueType)) {
                     case TypeCode.Char:
                     case TypeCode.String:
-                        return (quoteStringValues ? "'" : string.Empty) + Convert.ToString(obj) + (quoteStringValues ? "'" : string.Empty);
-                    
+                        return quote + Convert.ToString(obj) + quote;
+
                     case TypeCode.DateTime:
-                        return (quoteStringValues ? "'" : string.Empty) + Convert.ToDateTime(obj).ToString() + (quoteStringValues ? "'" : string.Empty);
+                        return quote + Convert.ToDateTime(obj).ToString() + quote;
 
                     case TypeCode.Boolean:
                         return Convert.ToInt32(Convert.ToBoolean(obj)).ToString();
@@ -57,99 +63,88 @@ namespace SharpRambo.ExtensionsLib
                 }
             } else
                 return "NULL";
-        }
 #endif
+        }
 
-        /// <summary><inheritdoc cref="Directory.CreateDirectory(string)" path="/summary/node()"/></summary>
-        /// <param name="directoryInfo">The <see cref="DirectoryInfo"/> of the Directory to create</param>
+        #endregion Object Extensions
+
+        #region String Extensions
+
+        /// <summary>
+        /// Decode from Base64 string.
+        /// </summary>
+        /// <param name="base64">The base64 string.</param>
         /// <returns></returns>
-        public static DirectoryInfo CreateAnyway(this DirectoryInfo directoryInfo)
-            => Directory.CreateDirectory(directoryInfo.FullName);
+        public static string FromBase64(this string base64)
+            => !base64.IsNull() ? Encoding.UTF8.GetString(Convert.FromBase64String(base64)) : string.Empty;
 
-        /// <inheritdoc cref="File.ReadAllBytes(string)"/>
-        public static byte[] ReadAllBytes(this FileInfo fileInfo)
-            => fileInfo != null && fileInfo.Exists
-                ? File.ReadAllBytes(Path.GetFullPath(fileInfo.FullName))
-#if !NET20 && !NET35 && !NET40 && !NET45
-                : Array.Empty<byte>();
+        /// <summary>
+        /// Encode the string to Base64 string.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static string ToBase64(this string str) {
+            if (str.IsNull())
+                return string.Empty;
+
+#if NET5_0_OR_GREATER
+            ReadOnlySpan<byte>
 #else
-                : new byte[] {};
+            byte[]
 #endif
-
-        /// <inheritdoc cref="File.ReadAllLines(string, System.Text.Encoding)"/>
-        public static string[] ReadAllLines(this FileInfo fileInfo, System.Text.Encoding encoding = null)
-            => fileInfo != null && fileInfo.Exists
-                ? (encoding != null ? File.ReadAllLines(Path.GetFullPath(fileInfo.FullName), encoding) : File.ReadAllLines(Path.GetFullPath(fileInfo.FullName)))
-#if !NET20 && !NET35 && !NET40 && !NET45
-                : Array.Empty<string>();
-#else
-                : new string[] {};
-#endif
-
-        /// <inheritdoc cref="File.ReadAllText(string, System.Text.Encoding)"/>
-        public static string ReadAllText(this FileInfo fileInfo, System.Text.Encoding encoding = null)
-            => fileInfo != null && fileInfo.Exists
-                ? (encoding != null
-                    ? File.ReadAllText(Path.GetFullPath(fileInfo.FullName), encoding)
-                    : File.ReadAllText(Path.GetFullPath(fileInfo.FullName)))
-                : string.Empty;
-
-        /// <inheritdoc cref="File.WriteAllLines(string, IEnumerable{string}, System.Text.Encoding)"/>
-        public static FileInfo WriteAllLines(this FileInfo fileInfo, string[] contents, System.Text.Encoding encoding = null, bool overrideFile = true)
-        {
-            IEnumerable<string> c = contents;
-            return WriteAllLines(fileInfo, c, encoding, overrideFile);
+            bytes = Encoding.UTF8.GetBytes(str);
+            return Convert.ToBase64String(bytes);
         }
 
-        /// <inheritdoc cref="File.WriteAllBytes(string, byte[])"/>
-        public static FileInfo WriteAllBytes(this FileInfo fileInfo, byte[] bytes, bool overrideFile = true)
-        {
-            if (fileInfo == null) throw new ArgumentNullException(nameof(fileInfo));
-            if (bytes.IsNull<byte>()) bytes = new byte[] { 0 };
+        /// <summary><inheritdoc cref="GetBytes(string, Encoding)"/></summary>
+        /// <param name="str">The string.</param>
+        /// <returns></returns>
+        public static byte[] GetBytes(this string str) => GetBytes(str, null);
 
-            if (overrideFile || !fileInfo.Exists)
-                File.WriteAllBytes(Path.GetFullPath(fileInfo.FullName), bytes);
+        /// <summary>
+        /// Gets the byte array of the string.
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="encoding">The encoding.</param>
+        /// <returns></returns>
+        public static byte[] GetBytes(this string str, [AllowNull] Encoding encoding) {
+            if (encoding == null) {
+                byte[] bytes = new byte[str.Length * sizeof(char)];
+                Buffer.BlockCopy(str.ToCharArray(), 0, bytes, 0, bytes.Length);
 
-            fileInfo.Refresh();
-            return fileInfo;
+                return bytes;
+            } else
+                return encoding.GetBytes(str);
         }
 
-        /// <inheritdoc cref="File.WriteAllLines(string, IEnumerable{string}, System.Text.Encoding)"/>
-        public static FileInfo WriteAllLines(this FileInfo fileInfo, IEnumerable<string> contents, System.Text.Encoding encoding = null, bool overrideFile = true)
-        {
-            if (fileInfo == null) throw new ArgumentNullException(nameof(fileInfo));
-            if (contents.IsNull()) contents = new string[] { string.Empty };
+        /// <summary><inheritdoc cref="GetString(byte[], Encoding)"/></summary>
+        /// <param name="bytes">The byte array.</param>
+        /// <returns></returns>
+        public static string GetString(this byte[] bytes) => GetString(bytes, null);
 
-            if (overrideFile || (!fileInfo.Exists)) {
-                if (encoding != null)
-                    File.WriteAllLines(Path.GetFullPath(fileInfo.FullName), contents.ToArray(), encoding);
-                else
-                    File.WriteAllLines(Path.GetFullPath(fileInfo.FullName), contents.ToArray());
-            }
+        /// <summary>
+        /// Gets the string of an byte array.
+        /// </summary>
+        /// <param name="bytes">The byte array.</param>
+        /// <param name="encoding">The encoding.</param>
+        /// <returns></returns>
+        public static string GetString(this byte[] bytes, [AllowNull] Encoding encoding) {
+            if (encoding == null) {
+                char[] chars = new char[bytes.Length / sizeof(char)];
+                Buffer.BlockCopy(bytes, 0, chars, 0, bytes.Length);
 
-            fileInfo.Refresh();
-            return fileInfo;
+                return new string(chars);
+            } else
+                return encoding.GetString(bytes);
         }
 
-        /// <inheritdoc cref="File.WriteAllText(string, string?, System.Text.Encoding)"/>
-        public static FileInfo WriteAllText(this FileInfo fileInfo, string contents = null, System.Text.Encoding encoding = null, bool overrideFile = true)
-        {
-            if (fileInfo == null) throw new ArgumentNullException(nameof(fileInfo));
+        #endregion String Extensions
 
-            if (overrideFile || !fileInfo.Exists) {
-                if (encoding != null)
-                    File.WriteAllText(Path.GetFullPath(fileInfo.FullName), contents, encoding);
-                else
-                    File.WriteAllText(Path.GetFullPath(fileInfo.FullName), contents);
-            }
-
-            fileInfo.Refresh();
-            return fileInfo;
-        }
-
+        #region Task Extensions
 #if NET35 || NET40
         public static Task GetCompletedTask()
                 => new Task(() => { return; }, new System.Threading.CancellationToken(false), TaskCreationOptions.AttachedToParent);
 #endif
+        #endregion Task Extensions
     }
 }

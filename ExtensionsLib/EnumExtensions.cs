@@ -6,37 +6,48 @@ using System.Linq;
 using System.Reflection;
 
 #if !NET20
+
 using System.Threading.Tasks;
+
 #endif
 
 #if !NET20 && !NET35 && !NET40
+
 using System.ComponentModel.DataAnnotations;
+
 #endif
 
-namespace SharpRambo.ExtensionsLib
-{
-    public static class EnumExtensions
-    {
+namespace SharpRambo.ExtensionsLib {
+
+    public static class EnumExtensions {
+
         /// <summary>Gets an attribute on an enum field value</summary>
         /// <typeparam name="T">The type of the attribute you want to retrieve</typeparam>
         /// <param name="enumVal">The enum value</param>
         /// <returns>The attribute of type T that exists on the enum value</returns>
         /// <example><![CDATA[string desc = myEnumVariable.GetAttributeOfType<DescriptionAttribute>().Description;]]></example>
-        public static T GetAttributeOfType<T>(this Enum enumVal) where T:Attribute
-        {
+        public static T GetAttributeOfType<T>(this Enum enumVal) where T : Attribute {
             Type enumT = enumVal.GetType();
-            MemberInfo[] memberInfo = enumT.GetMember(Enum.GetName(enumT, enumVal));
-            object[] attributes = memberInfo.First().GetCustomAttributes(typeof(T), false);
+            string memberName = Enum.GetName(enumT, enumVal);
 
-            return (attributes.Length > 0) ? (T)attributes.First() : null;
+            if (memberName.IsNull())
+                return default;
+
+            MemberInfo[] memberInfo = enumT.GetMember(memberName);
+
+            if (memberInfo.Length == 0)
+                return null;
+
+            object[] attributes = memberInfo[0].GetCustomAttributes(typeof(T), false);
+
+            return (attributes.Length > 0) ? (T)attributes[0] : null;
         }
 
         /// <summary>Gets the description attribute on an enum field value</summary>
         /// <param name="enumVal">The enum value</param>
         /// <returns>The value of the description attribute if exists on the enum value otherwise the name of the enum value</returns>
         /// <example><![CDATA[string desc = myEnumVariable.GetDescription();]]></example>
-        public static string GetDescription(this Enum enumVal)
-        {
+        public static string GetDescription(this Enum enumVal) {
             DescriptionAttribute attr = enumVal.GetAttributeOfType<DescriptionAttribute>();
             return attr == null ? Enum.GetName(enumVal.GetType(), enumVal) : attr.Description;
         }
@@ -45,22 +56,22 @@ namespace SharpRambo.ExtensionsLib
         /// <param name="enumVal">The enum value</param>
         /// <returns>The value of the category attribute if exists on the enum value otherwise an empty string</returns>
         /// <example><![CDATA[string desc = myEnumVariable.GetDescription();]]></example>
-        public static string GetCategory(this Enum enumVal)
-        {
+        public static string GetCategory(this Enum enumVal) {
             CategoryAttribute attr = enumVal.GetAttributeOfType<CategoryAttribute>();
             return attr == null ? string.Empty : attr.Category;
         }
 
 #if !NET20 && !NET35 && !NET40
+
         /// <summary>Gets the display attribute on an enum field value</summary>
         /// <param name="enumVal">The enum value</param>
         /// <returns>The display attribute if exists on the enum value otherwise an empty string</returns>
         /// <example><![CDATA[string desc = myEnumVariable.GetDescription();]]></example>
-        public static DisplayAttribute GetDisplay(this Enum enumVal)
-        {
+        public static DisplayAttribute GetDisplay(this Enum enumVal) {
             DisplayAttribute attr = enumVal.GetAttributeOfType<DisplayAttribute>();
             return attr ?? null;
         }
+
 #endif
 
         public static string GetName(this Enum enumVal)
@@ -69,46 +80,73 @@ namespace SharpRambo.ExtensionsLib
         public static EnumX.EnumFieldEntry GetFieldEntry(this Enum enumVal)
 #if NET5_0_OR_GREATER
             => new(enumVal);
+
 #else
             => new EnumX.EnumFieldEntry(enumVal);
 #endif
     }
 
-    public static class EnumX
-    {
-        public class EnumCollection : List<Enum>
-        {
-            public EnumCollection() : base() { }
-            public EnumCollection(int capacity) : base(capacity) { }
-            public EnumCollection(IEnumerable<Enum> collection) : base(collection) { }
+    public static class EnumX {
+
+        public class EnumCollection : List<Enum> {
+
+            public EnumCollection() : base() {
+            }
+
+            public EnumCollection(int capacity) : base(capacity) {
+            }
+
+            public EnumCollection(IEnumerable<Enum> collection) : base(collection) {
+            }
         }
 
-        public class ParsedEnumCollection : Dictionary<Type, EnumFieldEntryCollection>
-        {
-            public ParsedEnumCollection() : base() { }
-            public ParsedEnumCollection(int capacity) : base(capacity) { }
-            public ParsedEnumCollection(IEqualityComparer<Type> comparer) : base(comparer) { }
-            public ParsedEnumCollection(IDictionary<Type, EnumFieldEntryCollection> dictionary) : base(dictionary) { }
-            public ParsedEnumCollection(int capacity, IEqualityComparer<Type> comparer) : base(capacity, comparer) { }
-            public ParsedEnumCollection(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
-            public ParsedEnumCollection(IDictionary<Type, EnumFieldEntryCollection> dictionary, IEqualityComparer<Type> comparer) : base(dictionary, comparer) { }
+#if !NET8_0_OR_GREATER
+        [Serializable]
+#endif
+
+        public class ParsedEnumCollection : Dictionary<Type, EnumFieldEntryCollection> {
+
+            public ParsedEnumCollection() : base() {
+            }
+
+            public ParsedEnumCollection(int capacity) : base(capacity) {
+            }
+
+            public ParsedEnumCollection(IEqualityComparer<Type> comparer) : base(comparer) {
+            }
+
+            public ParsedEnumCollection(IDictionary<Type, EnumFieldEntryCollection> dictionary) : base(dictionary) {
+            }
+
+            public ParsedEnumCollection(int capacity, IEqualityComparer<Type> comparer) : base(capacity, comparer) {
+            }
+
+#if !NET8_0_OR_GREATER
+            protected ParsedEnumCollection(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) : base(info, context) {
+            }
+#endif
+
+            public ParsedEnumCollection(IDictionary<Type, EnumFieldEntryCollection> dictionary, IEqualityComparer<Type> comparer) : base(dictionary, comparer) {
+            }
 
             public void Add(Enum @enum) => Add(@enum.GetType());
+
             public void Add<TEnum>() where TEnum : Enum => Add(typeof(TEnum));
-            public void Add(Type enumType)
-            {
+
+            public void Add(Type enumType) {
                 EnumFieldEntryCollection eFEC = GetFieldEntries(enumType);
 
-                if (this.ContainsKey(enumType))
+                if (ContainsKey(enumType))
                     this[enumType] = eFEC;
                 else
-                    this.Add(enumType, eFEC);
+                    Add(enumType, eFEC);
             }
 
 #if !NET20
+
             public async Task AddRangeAsync(params Enum[] enums) => await AddRangeAsync(new EnumCollection(enums));
-            public async Task AddRangeAsync(EnumCollection enumCollection)
-            {
+
+            public async Task AddRangeAsync(EnumCollection enumCollection) {
                 if (enumCollection.IsNull())
                     throw new ArgumentNullException(nameof(enumCollection));
 
@@ -125,8 +163,8 @@ namespace SharpRambo.ExtensionsLib
             }
 
             public async Task AddRangeAsync(params Type[] enumTypes) => await AddRangeAsync(enumTypes?.ToList());
-            public async Task AddRangeAsync(IEnumerable<Type> enumTypeCollection)
-            {
+
+            public async Task AddRangeAsync(IEnumerable<Type> enumTypeCollection) {
                 if (enumTypeCollection.IsNull())
                     throw new ArgumentNullException(nameof(enumTypeCollection));
 
@@ -142,38 +180,39 @@ namespace SharpRambo.ExtensionsLib
 #endif
                 });
             }
+
 #endif
 
             public void AddRange(params Enum[] enums) => AddRange(new EnumCollection(enums));
-            public void AddRange(EnumCollection enumCollection)
-            {
+
+            public void AddRange(EnumCollection enumCollection) {
                 foreach (Enum e in enumCollection)
                     Add(e);
             }
 
             public void AddRange(params Type[] enumTypes) => AddRange(enumTypes?.ToList());
-            public void AddRange(IEnumerable<Type> enumTypeCollection)
-            {
+
+            public void AddRange(IEnumerable<Type> enumTypeCollection) {
                 foreach (Type eT in enumTypeCollection)
                     Add(eT);
             }
         }
 
-        public class EnumFieldEntry
-        {
-            public string Name { get; private set; }
-            public Enum EnumObject { get; private set; }
-            public string Description { get; private set; }
-            public string Category { get; private set; }
+        public class EnumFieldEntry {
+            public string Name { get; }
+            public Enum EnumObject { get; }
+            public string Description { get; }
+            public string Category { get; }
             public string DisplayName { get; set; }
 
 #if !NET20 && !NET35 && !NET40
-            public DisplayAttribute Display { get; private set; }
+            public DisplayAttribute Display { get; }
 #endif
 
-            public EnumFieldEntry(Enum enumVal) : this(enumVal.GetName(), enumVal.GetDescription(), enumVal) { }
-            public EnumFieldEntry(string name, string description, Enum enumVal)
-            {
+            public EnumFieldEntry(Enum enumVal) : this(enumVal.GetName(), enumVal.GetDescription(), enumVal) {
+            }
+
+            public EnumFieldEntry(string name, string description, Enum enumVal) {
                 if (name.IsNull())
                     throw new ArgumentNullException(nameof(name));
 
@@ -187,7 +226,7 @@ namespace SharpRambo.ExtensionsLib
 #if !NET20 && !NET35 && !NET40
                 Display = enumVal.GetDisplay();
 
-                if (Display != null && !Display.Description.IsNull() && description.IsNull())
+                if (Display?.Description.IsNull() == false && description.IsNull())
                     Description = Display.Description;
 #endif
             }
@@ -196,22 +235,31 @@ namespace SharpRambo.ExtensionsLib
 #if NET20
         public class EnumFieldEntryCollection : List<EnumFieldEntry>
 #else
+
         public class EnumFieldEntryCollection : ObservableCollection<EnumFieldEntry>
 #endif
         {
-            public EnumFieldEntryCollection() : base() { }
+            public EnumFieldEntryCollection() : base() {
+            }
+
 #if NET20
             public EnumFieldEntryCollection(int capacity) : base(capacity) { }
 #else
-            public EnumFieldEntryCollection(List<EnumFieldEntry> list) : base(list) { }
+
+            public EnumFieldEntryCollection(List<EnumFieldEntry> list) : base(list) {
+            }
+
 #endif
-            public EnumFieldEntryCollection(IEnumerable<EnumFieldEntry> collection) : base(collection) { }
+
+            public EnumFieldEntryCollection(IEnumerable<EnumFieldEntry> collection) : base(collection) {
+            }
         }
 
-        public static EnumFieldEntryCollection GetFieldEntries<T>() where T:Enum => GetFieldEntries(typeof(T));
+        public static EnumFieldEntryCollection GetFieldEntries<T>() where T : Enum => GetFieldEntries(typeof(T));
+
         public static EnumFieldEntryCollection GetFieldEntries(Enum @enum) => GetFieldEntries(@enum.GetType());
-        public static EnumFieldEntryCollection GetFieldEntries(Type enumType)
-        {
+
+        public static EnumFieldEntryCollection GetFieldEntries(Type enumType) {
             if (enumType == null)
                 throw new ArgumentNullException(nameof(enumType));
 

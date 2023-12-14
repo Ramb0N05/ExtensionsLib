@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SharpRambo.ExtensionsLib
-{
+namespace SharpRambo.ExtensionsLib {
+
     /// <summary>The LambdaEqualityComparerExtensions class.</summary>
-    public static class LambdaEqualityComparerExtensions
-    {
+    public static class LambdaEqualityComparerExtensions {
+
         /// <summary><inheritdoc cref="Enumerable.Except{TSource}(IEnumerable{TSource}, IEnumerable{TSource}, IEqualityComparer{TSource}?)" path="/summary/node()"/></summary>
         /// <typeparam name="TSource">The type of the source.</typeparam>
         /// <typeparam name="TComparable">The type of the comparable.</typeparam>
