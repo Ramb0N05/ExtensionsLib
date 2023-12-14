@@ -2,7 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+
 using System.Diagnostics.CodeAnalysis;
+
+#endif
 
 namespace SharpRambo.ExtensionsLib {
 
@@ -18,7 +23,11 @@ namespace SharpRambo.ExtensionsLib {
         /// <returns>
         ///   <c>True</c> if <c>checkDirectory</c> is sub-directory of <c>baseDirectory</c>; otherwise, <c>False</c>.
         /// </returns>
-        public static bool Contains(this DirectoryInfo baseDirectory, [AllowNull] DirectoryInfo checkDirectory)
+        public static bool Contains(this DirectoryInfo baseDirectory,
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+            [AllowNull]
+#endif
+        DirectoryInfo checkDirectory)
             => checkDirectory?.Exists == true && checkDirectory.Parent != null
                 && (checkDirectory.FullName == baseDirectory.FullName || checkDirectory.Parent.FullName == baseDirectory.FullName || baseDirectory.Contains(checkDirectory.Parent));
 
@@ -30,7 +39,11 @@ namespace SharpRambo.ExtensionsLib {
         /// <returns>
         ///   <c>True</c> if <c>checkDirectory</c> is located in <c>baseDirectory</c> or in an sub-directory of <c>baseDirectory</c>; otherwise, <c>False</c>.
         /// </returns>
-        public static bool Contains(this DirectoryInfo baseDirectory, [AllowNull] FileInfo checkFile)
+        public static bool Contains(this DirectoryInfo baseDirectory,
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+            [AllowNull]
+#endif
+        FileInfo checkFile)
             => baseDirectory.Contains(checkFile?.Directory);
 
         /// <summary><inheritdoc cref="Directory.CreateDirectory(string)" path="/summary/node()"/></summary>
@@ -43,7 +56,10 @@ namespace SharpRambo.ExtensionsLib {
         public static byte[] ReadAllBytes(this FileInfo fileInfo)
             => fileInfo?.Exists == true
                 ? File.ReadAllBytes(Path.GetFullPath(fileInfo.FullName))
-#if !NET20 && !NET35 && !NET40 && !NET45
+#if NET8_0_OR_GREATER
+                : [];
+
+#elif !NET20 && !NET35 && !NET40 && !NET45
                 : Array.Empty<byte>();
 
 #else
@@ -57,7 +73,9 @@ namespace SharpRambo.ExtensionsLib {
         public static string[] ReadAllLines(this FileInfo fileInfo, System.Text.Encoding encoding = null) {
             if (fileInfo?.Exists != true)
                 return
-#if !NET20 && !NET35 && !NET40 && !NET45
+#if NET8_0_OR_GREATER
+                [];
+#elif !NET20 && !NET35 && !NET40 && !NET45
                 Array.Empty<string>();
 #else
                 new string[] { };
@@ -83,7 +101,12 @@ namespace SharpRambo.ExtensionsLib {
             if (fileInfo == null)
                 throw new ArgumentNullException(nameof(fileInfo));
             if (bytes.IsNull<byte>())
-                bytes = new byte[] { 0 };
+                bytes =
+#if NET8_0_OR_GREATER
+                    [0];
+#else
+                    new byte[] { 0 };
+#endif
 
             if (overrideFile || !fileInfo.Exists)
                 File.WriteAllBytes(Path.GetFullPath(fileInfo.FullName), bytes);

@@ -1,12 +1,14 @@
 ﻿using System;
-using System.IO;
-using System.Linq;
-using System.Collections.Generic;
 using System.Text;
-using System.Diagnostics.CodeAnalysis;
 
 #if NET35 || NET40
 using System.Threading.Tasks;
+#endif
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+
+using System.Diagnostics.CodeAnalysis;
+
 #endif
 
 namespace SharpRambo.ExtensionsLib {
@@ -107,7 +109,11 @@ namespace SharpRambo.ExtensionsLib {
         /// <param name="str">The string.</param>
         /// <param name="encoding">The encoding.</param>
         /// <returns></returns>
-        public static byte[] GetBytes(this string str, [AllowNull] Encoding encoding) {
+        public static byte[] GetBytes(this string str,
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+            [AllowNull]
+#endif
+        Encoding encoding) {
             if (encoding == null) {
                 byte[] bytes = new byte[str.Length * sizeof(char)];
                 Buffer.BlockCopy(str.ToCharArray(), 0, bytes, 0, bytes.Length);
@@ -128,7 +134,11 @@ namespace SharpRambo.ExtensionsLib {
         /// <param name="bytes">The byte array.</param>
         /// <param name="encoding">The encoding.</param>
         /// <returns></returns>
-        public static string GetString(this byte[] bytes, [AllowNull] Encoding encoding) {
+        public static string GetString(this byte[] bytes,
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+            [AllowNull]
+#endif
+        Encoding encoding) {
             if (encoding == null) {
                 char[] chars = new char[bytes.Length / sizeof(char)];
                 Buffer.BlockCopy(bytes, 0, chars, 0, bytes.Length);

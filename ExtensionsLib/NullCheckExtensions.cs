@@ -1,7 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+
+using System.Diagnostics.CodeAnalysis;
+
+#endif
 
 namespace SharpRambo.ExtensionsLib {
 
@@ -11,7 +16,11 @@ namespace SharpRambo.ExtensionsLib {
         /// <summary>Determines whether this instance is null or an empty string.</summary>
         /// <param name="value">The value.</param>
         /// <returns><see langword="True"/> if the specified value is null, otherwise <see langword="False"/>.</returns>
-        public static bool IsNull([NotNullWhen(false)] this string value)
+        public static bool IsNull(
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+            [NotNullWhen(false)]
+#endif
+        this string value)
 
 #if NETCOREAPP1_0_OR_GREATER || NETSTANDARD1_0_OR_GREATER || NET40_OR_GREATER
 
@@ -27,7 +36,11 @@ namespace SharpRambo.ExtensionsLib {
         /// <param name="value">The value.</param>
         /// <param name="recursive">Specifies whether the collection should be checked recursively.</param>
         /// <returns><see langword="True"/> if the specified value is null, otherwise <see langword="False"/>.</returns>
-        public static bool IsNull<TSource>([NotNullWhen(false)] this IEnumerable<TSource> value, bool recursive = true) {
+        public static bool IsNull<TSource>(
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+            [NotNullWhen(false)]
+#endif
+        this IEnumerable<TSource> value, bool recursive = true) {
             bool onlyEmptyItems = true;
 
             if (recursive && value?.Any() == true)
@@ -42,7 +55,11 @@ namespace SharpRambo.ExtensionsLib {
         /// <param name="value">The value.</param>
         /// <param name="recursive">Specifies whether the array should be checked recursively.</param>
         /// <returns><see langword="True"/> if the specified value is null, otherwise <see langword="False"/>.</returns>
-        public static bool IsNull([NotNullWhen(false)] this Array value, bool recursive = true) {
+        public static bool IsNull(
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
+            [NotNullWhen(false)]
+#endif
+        this Array value, bool recursive = true) {
             bool onlyEmptyItems = true;
 
             if (recursive && value?.Length > 0)
