@@ -24,7 +24,7 @@ jobs:
       
     - name: Get Project version
       id: package_version
-      uses: KageKirin/get-csproj-version@v0
+      uses: MWin10/get-csproj-version-fork@latest
       with:
         file: ExtensionsLib/ExtensionsLib.csproj
       
@@ -63,7 +63,7 @@ jobs:
         body: ${{ steps.last_commit.outputs.description }}
         commit: latest
         generateReleaseNotes: true
-        tag: v${{ steps.package_version.version }}
+        tag: v${{ steps.package_version.outputs.version }}
         
     - name: Publish the package to GPR
       run: dotnet nuget push ExtensionsLib/bin/Release/*.nupkg -k ${{ env.NUGET_AUTH_TOKEN }}
