@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Text;
 
-#if NET35 || NET40
-using System.Threading.Tasks;
-#endif
-
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_1_OR_GREATER
 
 using System.Diagnostics.CodeAnalysis;
@@ -13,7 +9,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace SharpRambo.ExtensionsLib {
 
-    /// <summary>The GenericExtensions class.</summary>
+    /// <summary>
+    /// The GenericExtensions class.
+    /// </summary>
     public static class GenericExtensions {
 
         #region Object Extensions
@@ -149,12 +147,5 @@ namespace SharpRambo.ExtensionsLib {
         }
 
         #endregion String Extensions
-
-        #region Task Extensions
-#if NET35 || NET40
-        public static Task GetCompletedTask()
-                => new Task(() => { return; }, new System.Threading.CancellationToken(false), TaskCreationOptions.AttachedToParent);
-#endif
-        #endregion Task Extensions
     }
 }

@@ -6,6 +6,9 @@ using System.Net.Sockets;
 
 namespace SharpRambo.ExtensionsLib {
 
+    /// <summary>
+    /// The NetworkingExtensions class.
+    /// </summary>
     public static class NetworkingExtensions {
 
         #region IPAddress Extensions

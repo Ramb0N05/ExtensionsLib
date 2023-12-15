@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SharpRambo.ExtensionsLib {
+namespace SharpRambo.ExtensionsLib.LambdaEqualityComparer {
 
-    /// <summary>The LambdaEqualityComparer class.</summary>
+    /// <summary>
+    /// The LambdaEqualityComparer class.
+    /// </summary>
     /// <typeparam name="TSource">The type of the source.</typeparam>
     /// <typeparam name="TComparable">The type of the comparable.</typeparam>
-    /// <seealso cref="System.Collections.Generic.IEqualityComparer&lt;TSource&gt;" />
+    /// <seealso cref="IEqualityComparer{TSource}" />
     public class LambdaEqualityComparer<TSource, TComparable> : IEqualityComparer<TSource> {
         private readonly Func<TSource, TComparable> _keyGetter;
 
@@ -19,7 +21,7 @@ namespace SharpRambo.ExtensionsLib {
         /// <summary>Determines whether the specified objects are equal.</summary>
         /// <param name="x">The first object of type <typeparamref name="TSource"/> to compare.</param>
         /// <param name="y">The second object of type <typeparamref name="TSource" /> to compare.</param>
-        /// <returns><see langword="true" /> if the specified objects are equal; otherwise, <see langword="false" />.</returns>
+        /// <returns><see langword="True" /> if the specified objects are equal; otherwise, <see langword="False" />.</returns>
         public bool Equals(TSource x, TSource y)
             => x == null || y == null ? x == null && y == null : Equals(_keyGetter(x), _keyGetter(y));
 
@@ -31,9 +33,9 @@ namespace SharpRambo.ExtensionsLib {
 
             return obj == null
                 ? int.MinValue
-                : (k == null
+                : k == null
                     ? int.MaxValue
-                    : k.GetHashCode());
+                    : k.GetHashCode();
         }
     }
 }

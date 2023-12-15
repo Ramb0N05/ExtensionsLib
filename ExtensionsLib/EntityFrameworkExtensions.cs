@@ -18,6 +18,9 @@ using System.Data.Entity;
 
 namespace SharpRambo.ExtensionsLib {
 
+    /// <summary>
+    /// The EntityFrameworkExtensions class.
+    /// </summary>
     public static class EntityFrameworkExtensions {
 
         public static int MaxOrDefault<T>(this IQueryable<T> source, Expression<Func<T, int?>> selector, int nullValue = 0)

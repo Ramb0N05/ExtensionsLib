@@ -1,20 +1,27 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Diagnostics;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace SharpRambo.ExtensionsLib {
+namespace SharpRambo.ExtensionsLib.ConsoleExtensions {
 
     public class ConsoleX {
-        public uint MenuWidth { get; set; }
+
+        #region Public Properties
+
+        public uint BufferHeight { get; set; }
+        public string MenuCaptionAffix { get; set; }
         public char MenuDividerChar { get; set; }
         public char MenuSmallDividerChar { get; set; }
-        public string MenuCaptionAffix { get; set; }
+        public uint MenuWidth { get; set; }
         public string PauseMessage { get; set; }
         public uint WindowHeight { get; set; }
-        public uint BufferHeight { get; set; }
+
+        #endregion Public Properties
+
+        #region Public Constructors
 
         public ConsoleX(uint menuWidth = 85, uint windowHeight = 30, uint bufferHeight = 255, char menuDividerChar = '=', char menuSmallDividerChar = '-', string menuCaptionAffix = "~~", string pauseMessage = "Drücken Sie die Eingabetaste. . . ") {
             MenuWidth = menuWidth > 0 ? menuWidth : 85;
@@ -25,6 +32,10 @@ namespace SharpRambo.ExtensionsLib {
             WindowHeight = windowHeight > 0 ? windowHeight : 30;
             BufferHeight = bufferHeight > 0 && bufferHeight >= windowHeight ? bufferHeight : 255;
         }
+
+        #endregion Public Constructors
+
+        #region Public Methods
 
         public void ApplyBufferAndWindowSize() {
 #if !NETFRAMEWORK
@@ -42,8 +53,6 @@ namespace SharpRambo.ExtensionsLib {
             Console.Write((newLine ? Environment.NewLine : string.Empty) + PauseMessage);
             Console.ReadLine();
         }
-
-        public void RunCommandNoShell(string command, string arguments = null, bool waitForExit = false) => RunCommand(command, arguments, waitForExit, false);
 
         public void RunCommand(string command, string arguments = null, bool waitForExit = false, bool shell = true) {
             if (command.IsNull())
@@ -70,6 +79,8 @@ namespace SharpRambo.ExtensionsLib {
                 WriteException(ex, "Befehl: " + command);
             }
         }
+
+        public void RunCommandNoShell(string command, string arguments = null, bool waitForExit = false) => RunCommand(command, arguments, waitForExit, false);
 
         public void WriteCaption(string caption, bool clearConsole = false, bool writeDividers = true, bool appendAffixWhitespace = true) {
             if (!caption.IsNull()) {
@@ -123,9 +134,6 @@ namespace SharpRambo.ExtensionsLib {
                 Console.WriteLine(dividerString);
         }
 
-        public void WriteSmallDivider()
-            => WriteDivider(MenuSmallDividerChar);
-
         public void WriteException(string exceptionMessage, string additionalMessage = null, bool pause = true) {
             Console.WriteLine(Environment.NewLine + "##  ERROR  ##");
             if (!additionalMessage.IsNull())
@@ -164,11 +172,8 @@ namespace SharpRambo.ExtensionsLib {
             return Console.ReadLine();
         }
 
-        public void WriteWarning(string message, bool newLine = true, bool pause = true) {
-            Console.WriteLine((newLine ? Environment.NewLine : string.Empty) + "[Warning] " + message);
-            if (pause)
-                Pause(true);
-        }
+        public void WriteSmallDivider()
+            => WriteDivider(MenuSmallDividerChar);
 
         public void WriteTable(DataTable table, bool writeEndingDivider = false, char? overrideDividerChar = null, char columnDivider = '|') {
             if (overrideDividerChar == null)
@@ -209,94 +214,13 @@ namespace SharpRambo.ExtensionsLib {
                     WriteDivider(overrideDividerChar);
             }
         }
-    }
 
-    public class MenuItemCollection : List<MenuItem> {
-        public string ItemPrefix { get; set; }
-        private readonly ConsoleX _cmd;
-
-        public MenuItemCollection() : base() {
-            ItemPrefix = string.Empty;
-            _cmd = new ConsoleX();
+        public void WriteWarning(string message, bool newLine = true, bool pause = true) {
+            Console.WriteLine((newLine ? Environment.NewLine : string.Empty) + "[Warning] " + message);
+            if (pause)
+                Pause(true);
         }
 
-        public MenuItemCollection(int capacity) : base(capacity) {
-            ItemPrefix = string.Empty;
-            _cmd = new ConsoleX();
-        }
-
-        public MenuItemCollection(IEnumerable<MenuItem> collection) : base(collection) {
-            _cmd = new ConsoleX();
-            ItemPrefix = string.Empty;
-        }
-
-        public MenuItemCollection(ConsoleX cmd) : this() {
-            _cmd = cmd ?? new ConsoleX();
-        }
-
-        public MenuItemCollection(ConsoleX cmd, string prefix) : this() {
-            _cmd = cmd ?? new ConsoleX();
-            ItemPrefix = !prefix.IsNull() ? prefix : string.Empty;
-        }
-
-        public MenuItemCollection(ConsoleX cmd, string prefix, int capacity) : this(capacity) {
-            _cmd = cmd ?? new ConsoleX();
-            ItemPrefix = !prefix.IsNull() ? prefix : string.Empty;
-        }
-
-        public MenuItemCollection(ConsoleX cmd, string prefix, IEnumerable<MenuItem> collection) : this(collection) {
-            _cmd = cmd ?? new ConsoleX();
-            ItemPrefix = !prefix.IsNull() ? prefix : string.Empty;
-        }
-
-        public void WriteToConsole() {
-            foreach (MenuItem item in this) {
-                if (!item.IsDivider)
-                    Console.Write(ItemPrefix);
-                item.WriteToConsole();
-            }
-        }
-
-        public void Add(string menuCode, string displayName)
-            => Add(new MenuItem(_cmd, menuCode, displayName));
-
-        public void Add(ushort writeDividerChar = 0)
-            => Add(new MenuItem(_cmd, writeDividerChar));
-    }
-
-    public class MenuItem {
-        public string Code { get; set; }
-        public string DisplayName { get; set; }
-        public bool IsDivider { get; }
-        private readonly ushort _writeDividerChar;
-        private readonly ConsoleX _cmd;
-
-        public MenuItem(ConsoleX cmd, string code, string displayName = null) {
-            if (code.IsNull())
-                throw new ArgumentNullException(nameof(code));
-
-            _cmd = cmd ?? new ConsoleX();
-            Code = code;
-            IsDivider = false;
-            DisplayName = !displayName.IsNull() ? displayName : string.Empty;
-        }
-
-        public MenuItem(ConsoleX cmd, ushort writeDividerChar = 0) {
-            _cmd = cmd ?? new ConsoleX();
-            IsDivider = true;
-            _writeDividerChar = writeDividerChar;
-        }
-
-        public void WriteToConsole() {
-            if (IsDivider) {
-                if (_writeDividerChar == 1)
-                    _cmd.WriteSmallDivider();
-                else if (_writeDividerChar == 2)
-                    _cmd.WriteDivider();
-                else
-                    Console.WriteLine();
-            } else
-                Console.WriteLine("[" + (Code.Length == 1 ? " " + Code + " " : Code.PadLeft(3)) + "]" + (!DisplayName.IsNull() ? " - " + DisplayName : string.Empty));
-        }
+        #endregion Public Methods
     }
 }

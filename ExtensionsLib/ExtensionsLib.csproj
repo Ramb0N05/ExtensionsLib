@@ -15,7 +15,7 @@
     <NeutralLanguage>en-150</NeutralLanguage>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.1.1</Version>
+    <Version>1.2.0</Version>
     <Nullable>disable</Nullable>
     <Title>$(AssemblyName)</Title>
     <FileVersion></FileVersion>
@@ -23,6 +23,7 @@
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <AnalysisLevel>6.0</AnalysisLevel>
+    <RootNamespace>SharpRambo.$(MSBuildProjectName.Replace(" ", "_"))</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">

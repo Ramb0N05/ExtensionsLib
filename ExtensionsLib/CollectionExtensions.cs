@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
 
 #if !NET20
@@ -17,22 +18,32 @@ namespace SharpRambo.ExtensionsLib {
     public static class CollectionExtensions {
 #if !NET20
 
+        public static async Task ForEachAsync(this Array array, Func<object, Task> func) {
+            if (array.Length > 0)
+                foreach (object value in array)
+                    await func(value).ConfigureAwait(false);
+        }
+
         public static async Task ForEachAsync<T>(this IEnumerable<T> list, Func<T, Task> func) {
-            foreach (T value in list)
-                await func(value).ConfigureAwait(false);
+            if (list.Any())
+                foreach (T value in list)
+                    await func(value).ConfigureAwait(false);
         }
 
         public static async Task<TResult> ForEachAsync<T, TResult>(this IEnumerable<T> list, Func<T, Task<T>> func)
             where TResult : IList<T>, new() {
             TResult result =
-#if NET5_0_OR_GREATER
+#if NET8_0_OR_GREATER
+                [];
+#elif NET5_0_OR_GREATER
                 new();
 #else
                 new TResult();
 #endif
 
-            foreach (T value in list)
-                result.Add(await func(value).ConfigureAwait(false));
+            if (list.Any())
+                foreach (T value in list)
+                    result.Add(await func(value).ConfigureAwait(false));
 
             return result;
         }
