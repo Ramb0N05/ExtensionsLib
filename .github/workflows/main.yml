@@ -22,11 +22,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
       
-    - name: Get Project version
+    - name: Get Package version
       id: package_version
-      uses: MWin10/get-csproj-version-fork@1
+      uses: kzrnm/get-net-sdk-project-versions-action@v1
       with:
-        file: ExtensionsLib/ExtensionsLib.csproj
+        proj-path: ExtensionsLib/ExtensionsLib.csproj
       
     - name: Get last commit
       id: last_commit
