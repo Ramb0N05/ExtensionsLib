@@ -24,7 +24,7 @@ jobs:
       
     - name: Get Project version
       id: package_version
-      uses: MWin10/get-csproj-version-fork@latest
+      uses: MWin10/get-csproj-version-fork@1
       with:
         file: ExtensionsLib/ExtensionsLib.csproj
       
