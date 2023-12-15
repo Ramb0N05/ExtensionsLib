@@ -5,8 +5,11 @@ name: .NET Publish
 
 on:
   push:
-    branches: [ "release" ]
+    branches: [ "latest" ]
   workflow_dispatch:
+
+env:
+  NUGET_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
 
 jobs:
   build:
@@ -54,4 +57,4 @@ jobs:
         tag: v${{ steps.test.package_version.version }}
         
     - name: Publish the package to GPR
-      run: dotnet nuget push ExtensionsLib/bin/Release/*.nupkg -k ${{ secrets.GH_PACKAGES_TOKEN }}
+      run: dotnet nuget push ExtensionsLib/bin/Release/*.nupkg -k ${{ env.NUGET_AUTH_TOKEN }}
