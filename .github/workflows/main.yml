@@ -27,7 +27,15 @@ jobs:
       uses: KageKirin/get-csproj-version@v0
       with:
         file: ExtensionsLib/ExtensionsLib.csproj
-        
+      
+    - name: Get last commit
+      id: last_commit
+      uses: nmbgeek/github-action-get-latest-commit@main
+      with:
+        owner: Ramb0N05
+        repo: ExtensionsLib
+        branch: latest
+      
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
@@ -52,9 +60,10 @@ jobs:
       with:
         artifactErrorsFailBuild: true
         artifacts: 'ExtensionsLib/bin/Release/*.nupkg,ExtensionsLib/bin/Release/*.snupkg'
+        body: ${{ steps.last_commit.outputs.description }}
         commit: latest
         generateReleaseNotes: true
-        tag: v${{ steps.test.package_version.version }}
+        tag: v${{ steps.package_version.version }}
         
     - name: Publish the package to GPR
       run: dotnet nuget push ExtensionsLib/bin/Release/*.nupkg -k ${{ env.NUGET_AUTH_TOKEN }}
