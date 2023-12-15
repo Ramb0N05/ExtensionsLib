@@ -1,0 +1,57 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: .NET Publish
+
+on:
+  push:
+    branches: [ "release" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      
+    - name: Get Project version
+      id: package_version
+      uses: KageKirin/get-csproj-version@v0
+      with:
+        file: ExtensionsLib/ExtensionsLib.csproj
+        
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.x
+        dotnet-quality: signed
+        source-url: https://nuget.pkg.github.com/Ramb0N05/index.json
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+      
+    - name: Test
+      run: dotnet test --configuration Release --no-build --verbosity normal
+      
+    - name: Create the package
+      run: dotnet pack --configuration Release ExtensionsLib
+      
+    - name: Create Release
+      uses: ncipollo/release-action@v1.13.0
+      with:
+        artifactErrorsFailBuild: true
+        artifacts: 'ExtensionsLib/bin/Release/*.nupkg,ExtensionsLib/bin/Release/*.snupkg'
+        commit: latest
+        generateReleaseNotes: true
+        tag: v${{ steps.test.package_version.version }}
+        
+    - name: Publish the package to GPR
+      run: dotnet nuget push ExtensionsLib/bin/Release/*.nupkg -k ${{ secrets.GH_PACKAGES_TOKEN }}
