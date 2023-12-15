@@ -5,11 +5,12 @@ name: .NET Publish
 
 on:
   push:
-    branches: [ "latest" ]
+    branches: [ "master" ]
   workflow_dispatch:
 
 env:
   NUGET_AUTH_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+  NUGET_NINJA_AUTH_TOKEN: ${{ secrets.NINJA_PACKAGES_TOKEN }}
 
 jobs:
   build:
@@ -17,17 +18,17 @@ jobs:
 
     permissions:
       contents: write
-    
+
     steps:
     - name: Checkout
       uses: actions/checkout@v4
-      
+
     - name: Get Package version
       id: package_version
       uses: kzrnm/get-net-sdk-project-versions-action@v1
       with:
         proj-path: ExtensionsLib/ExtensionsLib.csproj
-      
+
     - name: Get last commit
       id: last_commit
       uses: nmbgeek/github-action-get-latest-commit@main
@@ -35,26 +36,26 @@ jobs:
         owner: Ramb0N05
         repo: ExtensionsLib
         branch: latest
-      
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.x
         dotnet-quality: signed
         source-url: https://nuget.pkg.github.com/Ramb0N05/index.json
-        
+
     - name: Restore dependencies
       run: dotnet restore
-      
+
     - name: Build
       run: dotnet build --configuration Release --no-restore
-      
+
     - name: Test
       run: dotnet test --configuration Release --no-build --verbosity normal
-      
+
     - name: Create the package
       run: dotnet pack --configuration Release ExtensionsLib
-      
+
     - name: Create Release
       uses: ncipollo/release-action@v1.13.0
       with:
@@ -64,6 +65,9 @@ jobs:
         commit: latest
         generateReleaseNotes: true
         tag: v${{ steps.package_version.outputs.version }}
-        
+
     - name: Publish the package to GPR
       run: dotnet nuget push ExtensionsLib/bin/Release/*.nupkg -k ${{ env.NUGET_AUTH_TOKEN }}
+
+    - name: Publish the package to NeulandNinja
+      run: dotnet nuget push ExtensionsLib/bin/Release/*.nupkg -k ${{ env.NUGET_NINJA_AUTH_TOKEN }} -s https://nuget.neuland.ninja/v3/index.json
